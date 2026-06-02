@@ -69,7 +69,8 @@ $SetupEnvScript = Join-Path $ScriptDir "setup_env.ps1"
 @'
 # 临时将当前 Node 实例加入 PATH，并设置 npm 缓存环境变量
 
-$NodeExeDir = Join-Path "." "nodejs"
+$CurrentPath = Convert-Path $PSScriptRoot
+$NodeExeDir = Join-Path $CurrentPath "nodejs"
 
 $env:PATH = "$NodeExeDir;$env:PATH"
 $env:npm_config_cache = Join-Path $NodeExeDir "npm-cache"
