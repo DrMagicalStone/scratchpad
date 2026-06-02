@@ -9,4 +9,6 @@ if (Test-Path $SetupEnv) {
     Write-Host "未找到 setup-env.ps1，使用系统默认 node/npm" -ForegroundColor Yellow
 }
 
+Write-Host $env:PATH
+
 npm run dev
