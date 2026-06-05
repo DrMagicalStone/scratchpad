@@ -22,7 +22,7 @@ class NewExpression(BaseModel):
 async def post_new_expression(body: NewExpression):
     '''
     基于传入参数创建一个新的表达式, 参数类型由创建方法决定, 创建方法均在 web_api.post_new_expression_methods 中
-    返回值为创建的表达式的 ID, 类型为 str, 完整路径为 /api/expressions, 请求方法为 POST
+    返回值为创建的表达式 (与 GET /api/expression/{expression_id} 结果相同), 完整路径为 /api/expressions, 请求方法为 POST
     '''
     method_name = body.method
     if method_name in methods:
@@ -35,7 +35,7 @@ async def post_new_expression(body: NewExpression):
 
 
 
-methods["input"] = input_expression
+methods["manual input"] = input_expression
 
 methods["factor"] = simplification
 methods["expand"] = simplification

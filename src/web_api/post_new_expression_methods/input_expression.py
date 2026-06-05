@@ -14,7 +14,7 @@ def input_expression(method_name, string_expression):
             sympy_expression = Eq(parse_expr(lhs, default_symbols), parse_expr(rhs, default_symbols))
             expression = Expression(get_next_id(), "Manual Input", sympy_expression)
             expressions[expression.get_id()] = expression
-            return expression.get_id()
+            return expression.serialize()
         except:
             raise HTTPException(status_code=400, detail="Incorrect latex expression.")
     else:

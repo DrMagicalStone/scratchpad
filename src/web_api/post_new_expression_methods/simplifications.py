@@ -25,6 +25,6 @@ def simplification(method_name: str, id_expression_to_transform: str):
                 expression = Solve(get_next_id(), id_expression_to_transform)
                 
         expressions[expression.get_id()] = expression
-        return expression.get_id()
+        return expression.serialize()
     else:
         raise HTTPException(status_code=404, detail=f"Expression with id {id_expression_to_transform} to perform \"{method_name}\" not found.")

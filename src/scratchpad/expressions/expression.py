@@ -19,10 +19,10 @@ class Expression:
     def get_sympy_expression(self):
         return self.sympy_expression
         
-    def get_parent_numbers(self) -> int:
+    def get_base_numbers(self) -> int:
         return 0
     
-    def get_parent_ids(self) -> list[str]:
+    def get_base_ids(self) -> list[str]:
         return []
     
     
@@ -35,7 +35,7 @@ class Expression:
         
         data["id"] = self.id
         data["definition_method"] = self.definition_method
-        data["parent_ids"] = self.get_parent_ids()
-        data["latex_expression"] = latex(self.sympy_expression)
+        data["base_ids"] = self.get_base_ids()
+        data["latex_expression"] = latex(self.sympy_expression).replace("\\left", "").replace("\\right", "").replace("\\ ", "")
         
         return data

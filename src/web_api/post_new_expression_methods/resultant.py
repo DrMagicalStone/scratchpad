@@ -19,6 +19,6 @@ def resultant(method_name: str, data: dict[str, Any]):
     if id_expression_0 in expressions and id_expression_1 in expressions and len(gen) == 1 and gen in string.ascii_letters:
         expression = Resultant(get_next_id(), id_expression_0, id_expression_1, gen)
         expressions[expression.get_id()] = expression
-        return expression.get_id()
+        return expression.serialize()
     else:
         raise HTTPException(status_code=404, detail=f"Expression with id {id_expression_0} or {id_expression_1} not found.")

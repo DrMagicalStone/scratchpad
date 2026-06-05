@@ -14,10 +14,10 @@ class Simplification(Expression):
         else:
             raise "Expression not found"
         
-    def get_parent_numbers(self) -> int:
+    def get_base_numbers(self) -> int:
         return 1
     
-    def get_parent_ids(self) -> list[str]:
+    def get_base_ids(self) -> list[str]:
         return [self.id_expression_from]
             
 class Factor(Simplification):
@@ -43,14 +43,3 @@ class Apart(Simplification):
 class Solve(Simplification):
     def __init__(self, id: str, id_expression_from: str):
         super().__init__(id, "Solve", id_expression_from, solve)
-        
-        
-    
-    def serialize(self) -> dict[str, Any]:
-        data = super().serialize()
-        
-        data["solve_set"] = data["latex_expression"]
-        
-        del data["latex_expression"]
-        
-        return data

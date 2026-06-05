@@ -14,8 +14,8 @@ class Resultant(Expression):
         self.id_expression_1 = id_expression_1
         super().__init__(id, "Resultant", Eq(expression, 0))
         
-    def get_parent_numbers(self) -> int:
+    def get_base_numbers(self) -> int:
         return 2
     
-    def get_parent_ids(self) -> list[str]:
+    def get_base_ids(self) -> list[str]:
         return [self.id_expression_0, self.id_expression_1]
