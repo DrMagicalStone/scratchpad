@@ -1,0 +1,17 @@
+.toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background: #222;
+}
+
+button {
+  color: white;
+  background: #444;
+  border: none;
+  padding: 6px 10px;
+}
+
+button:disabled {
+  opacity: 0.3;
+}

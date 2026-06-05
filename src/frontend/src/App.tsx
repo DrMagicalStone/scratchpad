@@ -1,139 +1,189 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Expression from "./Expression";
+import Toolbar from "./Toolbar";
+import ManualInputForm from "./ManualInputForm";
+import ResultantForm from "./ResultantForm";
+import "./App.css";
 
-type Expr = {
-  id: number;
-  latex: string;
-  visible: boolean;
+export type Expr = {
+  id: string;
+  definition_method: string;
+  latex_expression: string;
+  base_ids: string[];
+  pos: {
+    x: number;
+    y: number;
+  };
+  size: {
+    width: number;
+    height: number;
+  }
 };
 
 export default function App() {
-  const [sidebarWidth, setSidebarWidth] = useState(260);
-  const [dragging, setDragging] = useState(false);
+  const [exprs, setExprs] = useState<Expr[]>([]);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  const [exprs, setExprs] = useState<Expr[]>([
-    { id: 1, latex: "\\frac{a}{b}", visible: true },
-    { id: 2, latex: "x^2 + y^2 = z^2", visible: true },
-  ]);
+  const [showManual, setShowManual] = useState(false);
+  const [showResultant, setShowResultant] = useState<[Boolean, String | null, String | null]>([false, null, null]);
 
-  // 拖拽改变宽度
-  const onMouseMove = (e: MouseEvent) => {
-    if (dragging) {
-      setSidebarWidth(Math.max(150, e.clientX));
-    }
+  const toggleSelect = (id: string) => {
+    const next = new Set(selected);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setSelected(next);
   };
 
-  const onMouseUp = () => setDragging(false);
+  const addExpr = (...expr: Expr[]) => {
+    setExprs([...exprs, ...expr]);
+  };
 
-  // 挂全局监听
-  if (typeof window !== "undefined") {
-    window.onmousemove = onMouseMove;
-    window.onmouseup = onMouseUp;
+  const getExpr: (r: Response) => Promise<Expr> = async (r: Response) => {
+    let exp = await r.json();
+    exp.pos = {
+      x: 100,
+      y: 100
+    };
+
+    return exp;
   }
 
-  // 添加表达式
-  const addExpr = () => {
-    const id = Date.now();
-    setExprs([...exprs, { id, latex: "a+b", visible: true }]);
-  };
+  useEffect(() => {
+    fetch("/api/expressions_id")
+      .then(res => res.json())
+      .then((data: [string]) => {
+        Promise.all(data.map((id: string) => {
+          return fetch(`/api/expression/${id}`)
+            .then(getExpr);
+        })).then((exprs) => addExpr(...exprs));
+      });
+  }, []);
 
-  // 删除表达式
-  const removeExpr = (id: number) => {
-    setExprs(exprs.filter(e => e.id !== id));
-  };
+  function getEdgePoint(exp_from: Expr, exp_to: Expr) {
 
-  // 切换显示
-  const toggleVisible = (id: number) => {
-    setExprs(
-      exprs.map(e =>
-        e.id === id ? { ...e, visible: !e.visible } : e
-      )
-    );
-  };
+    let from = new DOMRectReadOnly(exp_from.pos.x, exp_from.pos.y, exp_from.size.width, exp_from.size.height);
+    let to = new DOMRectReadOnly(exp_to.pos.x, exp_to.pos.y, exp_to.size.width, exp_to.size.height);
+    
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+
+    const absDx = Math.abs(dx);
+    const absDy = Math.abs(dy);
+
+    let x = to.x + to.width / 2;
+    let y = to.y + to.height / 2;
+
+    if (absDx / to.width > absDy / to.height) {
+      // 左右边
+      x += dx > 0 ? -to.width / 2 : to.width / 2;
+      y += (-dy / absDx) * (to.width / 2);
+    } else {
+      // 上下边
+      y += dy > 0 ? -to.height / 2 : to.height / 2;
+      x += (-dx / absDy) * (to.height / 2);
+    }
+
+    return { x, y };
+  }
 
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-      
-      {/* 顶部工具栏 */}
-      <div
-        style={{
-          height: 50,
-          background: "#222",
-          color: "white",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 10px",
-          position: "sticky",
-          top: 0,
-          zIndex: 10,
-        }}
-      >
-        <button style={{ marginRight: 10 }}>功能1</button>
-        <button style={{ marginRight: 10 }}>功能2</button>
-        <button>功能3</button>
+    <div className="app">
+      <Toolbar
+        selectedCount={selected.size}
+        onManual={() => setShowManual(true)}
+        onResultant={(e_0, e_1) => setShowResultant([true, e_0, e_1])}
+        addExpr={addExpr}
+        getExpr={getExpr}
+        selectedIds={[...selected]}
+      />
+
+      <div className="canvas">
+        {/* 画箭头 */}
+        <svg className="edges">
+          <defs>
+            <marker
+              id="arrow"
+              markerWidth="10"
+              markerHeight="10"
+              refX="10"
+              refY="5"
+              orient="auto"
+              markerUnits="strokeWidth"
+            >
+              <path d="M0,0 L10,5 L0,10 Z" fill="#333" />
+            </marker>
+          </defs>
+          {exprs.map(to =>
+            to.base_ids.map(dep => {
+              const from = exprs.find(x => x.id === dep);
+              if ((!from) || (!from.size) || (!to.size)) return null;
+              
+              let pos_from = getEdgePoint(to, from);
+              let pos_to = getEdgePoint(from, to);
+
+              return (
+                <line
+                  key={dep + to.id}
+                  x1={pos_from.x}
+                  y1={pos_from.y}
+                  x2={pos_to.x}
+                  y2={pos_to.y}
+                  stroke="black"
+                  strokeWidth={2}
+                  markerEnd="url(#arrow)"
+                />
+              );
+            })
+          )}
+        </svg>
+
+        {exprs.map(expr => (
+          <Expression
+            key={expr.id}
+            expr={expr}
+            selected={selected.has(expr.id)}
+            onSelect={() => toggleSelect(expr.id)}
+            onMove={(x, y) => {
+              setExprs(exprs.map(e =>
+                e.id === expr.id ? { ...e, pos: { x, y } } : e
+              ));
+            }}
+            onBoundingChange={(w, h) => {
+              setExprs(exprs.map(e =>
+                e.id === expr.id ? { ...e, size: { width: Math.round(w), height: Math.round(h) } } : e
+              ));
+            }}
+          />
+        ))}
       </div>
 
-      <div style={{ flex: 1, display: "flex" }}>
-        
-        {/* 左侧导航栏 */}
-        <div
-          style={{
-            width: sidebarWidth,
-            background: "#f4f4f4",
-            borderRight: "1px solid #ccc",
-            padding: 10,
-            overflow: "auto",
-          }}
-        >
-          <h3>表达式列表</h3>
-
-          <button onClick={addExpr}>+ 添加</button>
-
-          {exprs.map(expr => (
-            <div
-              key={expr.id}
-              style={{
-                border: "1px solid #ddd",
-                marginTop: 10,
-                padding: 5,
-                background: "white",
-              }}
-            >
-              <div style={{ fontFamily: "monospace" }}>
-                {expr.latex}
-              </div>
-
-              <div style={{ marginTop: 5 }}>
-                <button onClick={() => toggleVisible(expr.id)}>
-                  {expr.visible ? "隐藏" : "显示"}
-                </button>
-
-                <button
-                  onClick={() => removeExpr(expr.id)}
-                  style={{ marginLeft: 5 }}
-                >
-                  删除
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* 拖拽条 */}
-        <div
-          onMouseDown={() => setDragging(true)}
-          style={{
-            width: 5,
-            cursor: "col-resize",
-            background: "#ccc",
+      {showManual && (
+        <ManualInputForm
+          onClose={() => setShowManual(false)}
+          onSubmit={async (content) => {
+            fetch("/api/expressions", {
+              method: "POST", headers: {
+                "Content-Type": "application/json",
+              }, body: JSON.stringify({ method: "manual input", data: content })
+            }).then(getExpr).then(addExpr);
+            setShowManual(false);
           }}
         />
+      )}
 
-        {/* 主区域 */}
-        <div style={{ flex: 1, padding: 20 }}>
-          <h1>主内容区域</h1>
-          <p>这里之后可以渲染数学表达式、图形等。</p>
-        </div>
-      </div>
+      {showResultant[0] && (
+        <ResultantForm
+          onClose={() => setShowResultant([false, null, null])}
+          onSubmit={(gen) => {
+            fetch("/api/expressions", {
+              method: "POST", headers: {
+                "Content-Type": "application/json",
+              }, body: JSON.stringify({ method: "resultant", data: { id_expression_0: showResultant[1], id_expression_1: showResultant[2], gen } })
+            }).then(getExpr).then(addExpr);
+            setShowResultant([false, null, null]);
+          }}
+        />
+      )}
     </div>
   );
 }
