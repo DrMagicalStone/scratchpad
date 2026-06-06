@@ -15,3 +15,10 @@ button {
 button:disabled {
   opacity: 0.3;
 }
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background-color: #ccc;
+  margin: 0 8px;
+}

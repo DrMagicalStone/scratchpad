@@ -6,6 +6,7 @@ export default function Toolbar({
   onManual,
   onResultant,
   onSolve,
+  onRemove,
   addExpr,
   getExpr,
   selectedIds
@@ -14,6 +15,7 @@ export default function Toolbar({
   onManual: () => void;
   onResultant: (e_0: string, e_1: string) => void;
   onSolve: () => void;
+  onRemove: () => void;
   addExpr: (...expr: Expr[]) => void;
   getExpr: (r: Response) => Promise<Expr>;
   selectedIds: string[];
@@ -43,6 +45,8 @@ export default function Toolbar({
       <button disabled={!two} onClick={() => onResultant(selectedIds[0], selectedIds[1])}>
         Resultant
       </button>
+      <div className="divider" />
+      <button disabled={!one} onClick={onRemove}>Remove</button>
     </div>
   );
 }

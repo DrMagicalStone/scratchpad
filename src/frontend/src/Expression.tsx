@@ -9,13 +9,15 @@ export default function Expression({
   selected,
   onSelect,
   onMove,
-  onBoundingChange
+  onBoundingChange,
+  fixed = false
 }: {
   expr: Expr;
   selected: boolean;
   onSelect: () => void;
   onMove: (x: number, y: number) => void;
   onBoundingChange: (width: number, height: number) => void;
+  fixed?: boolean
 }) {
   let dragging = false;
 
@@ -50,9 +52,12 @@ export default function Expression({
   return (
     <div
       ref={ref}
-      className={`expr ${selected ? "selected" : ""}`}
+      className={`expr ${selected ? "selected" : ""} ${fixed ? "item" : ""}`}
       style={{ left: expr.pos.x, top: expr.pos.y }}
       onMouseDown={(e) => {
+        if (fixed) {
+          return;
+        }
         dragging = true;
         const startX = e.clientX;
         const startY = e.clientY;
@@ -75,6 +80,9 @@ export default function Expression({
         window.addEventListener("mouseup", up);
       }}
       onClick={(e) => {
+        if (fixed) {
+          return;
+        }
         e.stopPropagation();
         onSelect();
       }}

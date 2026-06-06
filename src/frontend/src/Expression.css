@@ -1,9 +1,16 @@
 .expr {
-  position: absolute;
   background: white;
   border: 1px solid #ccc;
   padding: 8px;
   cursor: move;
+}
+
+.canvas .expr {
+  position: absolute;
+}
+
+.item .expr {
+  position: relative;
 }
 
 .expr.selected {

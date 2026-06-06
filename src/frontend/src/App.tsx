@@ -4,7 +4,9 @@ import Toolbar from "./Toolbar";
 import ManualInputForm from "./ManualInputForm";
 import ResultantForm from "./ResultantForm";
 import "./App.css";
+import "./Form.css"
 import SolveForm from "./SolveForm";
+import RemoveForm from "./RemoveForm";
 
 export type Expr = {
   id: string;
@@ -25,6 +27,7 @@ export default function App() {
   const [showManual, setShowManual] = useState(false);
   const [showResultant, setShowResultant] = useState<[Boolean, String | null, String | null]>([false, null, null]);
   const [showSolve, setShowSolve] = useState(false);
+  const [showRemove, setShowRemove] = useState(false);
 
   const toggleSelect = (id: string) => {
     const next = new Set(selected);
@@ -112,6 +115,7 @@ export default function App() {
         onManual={() => setShowManual(true)}
         onResultant={(e_0, e_1) => setShowResultant([true, e_0, e_1])}
         onSolve={() => setShowSolve(true)}
+        onRemove={() => setShowRemove(true)}
         addExpr={addExpr}
         getExpr={getExpr}
         selectedIds={[...selected]}
@@ -219,6 +223,22 @@ export default function App() {
               }, body: JSON.stringify({ method: "solve", data: {id_expression: [...selected][0], symbols: symbols.split(" ")} })
             }).then(getExpr).then(addExpr);
             setShowSolve(false);
+          }}
+        />
+      )}
+
+      {showRemove && (
+        <RemoveForm
+          exprs={exprs}
+          selectedIds={[...selected]}
+          onClose={() => setShowRemove(false)}
+          onSubmit={async (affected) => {
+            fetch(`/api/expression/${[...selected][0]}`, {
+              method: "DELETE", headers: {
+              }}).then(() => {
+                setExprs(exprs.filter(e => (!affected.has(e) && e.id != [...selected][0])));
+              });
+            setShowRemove(false);
           }}
         />
       )}
