@@ -1,4 +1,4 @@
-import { BlockMath, InlineMath } from "react-katex";
+import katex from "katex";
 import type { Expr } from "./App";
 import "./Expression.css";
 import "katex/dist/katex.min.css"
@@ -21,6 +21,8 @@ export default function Expression({
 
   let ref = useRef<HTMLDivElement | null>(null);
 
+  let ref_of_latex = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     if (!ref.current) {
       return;
@@ -30,11 +32,20 @@ export default function Expression({
 
       onBoundingChange(entry.inlineSize, entry.blockSize);
     });
-    if ((!expr.size) || (ref.current.offsetWidth != expr.size.width) || (ref.current.offsetHeight != expr.size.height)) {
-      onBoundingChange(ref.current.offsetWidth, ref.current.offsetHeight);
-    }
+    onBoundingChange(ref.current.offsetWidth, ref.current.offsetHeight);
     observer.observe(ref.current);
-  })
+
+    if (!ref_of_latex.current) {
+      return;
+    }
+    try {
+        katex.render(expr.latex_expression, ref_of_latex.current, {
+          throwOnError: false,
+        });
+      } catch (e) {
+        ref.current.innerText = String(e);
+      }
+  }, [expr])
 
   return (
     <div
@@ -69,11 +80,7 @@ export default function Expression({
       }}
     >
       <div className="method">{expr.definition_method}</div>
-      <BlockMath math={expr.latex_expression} renderError={(e) => {
-        return (
-          <div>{String(e)}</div>
-        )
-      }}/>
+      <div ref={ref_of_latex}></div>
     </div>
   );
 }

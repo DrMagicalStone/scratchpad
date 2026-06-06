@@ -5,6 +5,7 @@ export default function Toolbar({
   selectedCount,
   onManual,
   onResultant,
+  onSolve,
   addExpr,
   getExpr,
   selectedIds
@@ -12,6 +13,7 @@ export default function Toolbar({
   selectedCount: number;
   onManual: () => void;
   onResultant: (e_0: string, e_1: string) => void;
+  onSolve: () => void;
   addExpr: (...expr: Expr[]) => void;
   getExpr: (r: Response) => Promise<Expr>;
   selectedIds: string[];
@@ -36,7 +38,7 @@ export default function Toolbar({
       <button disabled={!one} onClick={() => onClick("cancel")}>Cancel</button>
       <button disabled={!one} onClick={() => onClick("together")}>Together</button>
       <button disabled={!one} onClick={() => onClick("apart")}>Apart</button>
-      <button disabled={!one} onClick={() => onClick("solve")}>Solve</button>
+      <button disabled={!one} onClick={onSolve}>Solve</button>
 
       <button disabled={!two} onClick={() => onResultant(selectedIds[0], selectedIds[1])}>
         Resultant

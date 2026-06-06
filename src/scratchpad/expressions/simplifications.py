@@ -2,7 +2,7 @@ from typing import Any
 
 from scratchpad.expressions.expression import Expression
 from scratchpad.scratchpad import expressions
-from sympy import apart, cancel, expand, factor, solve, together
+from sympy import apart, cancel, expand, factor, together
 
 class Simplification(Expression):
     def __init__(self, id: str, definition_method: str, id_expression_from: str, simplification_function):
@@ -39,7 +39,3 @@ class Together(Simplification):
 class Apart(Simplification):
     def __init__(self, id: str, id_expression_from: str):
         super().__init__(id, "Apart", id_expression_from, apart)
-        
-class Solve(Simplification):
-    def __init__(self, id: str, id_expression_from: str):
-        super().__init__(id, "Solve", id_expression_from, solve)

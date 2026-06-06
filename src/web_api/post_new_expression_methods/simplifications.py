@@ -4,7 +4,7 @@ from latex2sympy import latex2sympy
 from sympy import Eq
 
 from scratchpad.expressions.expression import Expression
-from scratchpad.expressions.simplifications import Apart, Cancel, Expand, Factor, Solve, Together
+from scratchpad.expressions.simplifications import Apart, Cancel, Expand, Factor, Together
 from scratchpad.scratchpad import get_next_id, expressions
 
 

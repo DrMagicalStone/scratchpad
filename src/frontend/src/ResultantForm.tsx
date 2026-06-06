@@ -13,7 +13,7 @@ export default function ResultantForm({
   return (
     <div className="modal">
       <div className="form">
-        <h3>Resultant</h3>
+        <h3>Input gen(The velue to be eliminated)</h3>
         <input value={v} onChange={e => setV(e.target.value)} />
         <button onClick={() => onSubmit(v)}>OK</button>
         <button onClick={onClose}>Cancel</button>

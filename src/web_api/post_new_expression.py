@@ -9,6 +9,7 @@ from scratchpad.scratchpad import expressions
 from web_api.post_new_expression_methods.resultant import resultant
 from web_api.post_new_expression_methods.input_expression import input_expression
 from web_api.post_new_expression_methods.simplifications import simplification
+from web_api.post_new_expression_methods.solution import solution
 
 methods: dict[str, function] = dict()
 
@@ -42,5 +43,5 @@ methods["expand"] = simplification
 methods["cancel"] = simplification
 methods["together"] = simplification
 methods["apart"] = simplification
-methods["solve"] = simplification
+methods["solve"] = solution
 methods["resultant"] = resultant
