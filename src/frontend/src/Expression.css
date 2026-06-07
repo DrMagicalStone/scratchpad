@@ -9,8 +9,12 @@
   position: absolute;
 }
 
-.item .expr {
+.expr.item {
   position: relative;
+  cursor: default;
+  left: auto !important;
+  top: auto !important;
+  margin: 8px 0;
 }
 
 .expr.selected {

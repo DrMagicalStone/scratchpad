@@ -1,79 +1,61 @@
-import { useState } from "react";
 import "./Form.css";
 import Expression from "./Expression";
 import type { Expr } from "./App";
 
-export default function SolveForm({
-    exprs,
-    selectedIds,
-    onClose,
-    onSubmit
+export default function RemoveForm({
+  exprs,
+  selectedIds,
+  onClose,
+  onSubmit
 }: {
-    exprs: Expr[];
-    onClose: () => void;
-    onSubmit: (content: Set<Expr | undefined>) => void;
-    selectedIds: string[];
+  exprs: Expr[];
+  onClose: () => void;
+  onSubmit: (affectedIds: Set<string>) => void;
+  selectedIds: string[];
 }) {
+  const selected = exprs.find(x => x.id === selectedIds[0]);
 
-    let selected = exprs.find(x => x.id === selectedIds[0]);
+  if (!selected) {
+    throw new Error("SelectedIds must contain existing expression ID.");
+  }
 
-    if (!selected) {
-        throw "SelectedIds must contain exist expr's ID.";
-    }
+  const childrenMap: Map<string, Set<string>> = new Map();
+  exprs.forEach(e => childrenMap.set(e.id, new Set()));
+  exprs.forEach(child => child.base_ids.forEach(base => childrenMap.get(base)?.add(child.id)));
 
-    let children_map: Map<string, Set<string>> = new Map();
+  const affectedIds: Set<string> = new Set();
+  let frontier: Set<string> = new Set(childrenMap.get(selected.id) ?? []);
 
-    exprs.forEach(e => children_map.set(e.id, new Set()));
+  while (frontier.size !== 0) {
+    const current = frontier;
+    frontier = new Set();
 
-    exprs.forEach(c => c.base_ids.forEach(b => children_map.get(b)?.add(c.id)));
+    current.forEach(id => {
+      if (!affectedIds.has(id)) {
+        affectedIds.add(id);
+        childrenMap.get(id)?.forEach(childId => frontier.add(childId));
+      }
+    });
+  }
 
-    let affected: Set<Expr | undefined> = new Set();
+  const affectedList = Array.from(affectedIds)
+    .map(id => exprs.find(e => e.id === id))
+    .filter((e): e is Expr => e !== undefined);
 
-    {
-        let temp: Set<Expr> = new Set();
-        children_map.get(selected.id)?.forEach(c_id => {
-            let n = exprs.find(c => c.id === c_id);
-            if (n)
-                temp.add(n);
-        });
-        while (temp.size != 0) {
-            temp.forEach(e => affected.add(e));
-            let t = temp;
-            temp = new Set();
-            t.forEach(e => children_map.get(e.id)?.forEach(c_id => {
-                if (!c_id) {
-                    throw "";
-                }
-                let n = exprs.find(c => c.id == c_id);
-                if (n) {
-                    temp.add(n);
-                }
-            }));
-        }
-    }
-
-    let affected_list = Array.from(affected);
-
-    return (
-        <div className="modal">
-            <div className="form">
-                <div className="list">
-                    <h3>Are your sure you want to remove expression:</h3>
-                    <Expression expr={selected} selected={false} onSelect={() => { }} onBoundingChange={() => { }} onMove={() => { }}></Expression>
-                    <p>The expressions below will be removed too:</p>
-                    {
-                        affected_list.map(e => {
-                            if (e) {
-                                return (<Expression expr={e} selected={false} onSelect={() => { }} onBoundingChange={() => { }} onMove={() => { }}></Expression>);
-                            } else {
-                                return <div></div>;
-                            }
-                        })
-                    }
-                </div>
-                <button onClick={() => onSubmit(affected)}>OK</button>
-                <button onClick={onClose}>Cancel</button>
-            </div>
+  return (
+    <div className="modal">
+      <div className="form wide-form">
+        <div className="list">
+          <h3>Are you sure you want to remove expression:</h3>
+          <Expression expr={selected} selected={false} onSelect={() => { }} onBoundingChange={() => { }} onMove={() => { }} fixed />
+          <p>The expressions below will be removed too:</p>
+          {affectedList.map(e => (
+            <Expression key={e.id} expr={e} selected={false} onSelect={() => { }} onBoundingChange={() => { }} onMove={() => { }} fixed />
+          ))}
         </div>
-    );
+        <button onClick={() => onSubmit(affectedIds)}>OK</button>
+        <button onClick={onClose}>Cancel</button>
+      </div>
+    </div>
+  );
 }
