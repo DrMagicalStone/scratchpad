@@ -7,6 +7,7 @@ export default function Toolbar({
   onResultant,
   onSolve,
   onRemove,
+  onCalculus,
   addExpr,
   getExpr,
   selectedIds
@@ -16,6 +17,7 @@ export default function Toolbar({
   onResultant: (e_0: string, e_1: string) => void;
   onSolve: () => void;
   onRemove: () => void;
+  onCalculus: (method: "differentiate" | "integrate") => void;
   addExpr: (...expr: Expr[]) => void;
   getExpr: (r: Response) => Promise<Expr>;
   selectedIds: string[];
@@ -25,11 +27,13 @@ export default function Toolbar({
 
   const onClick = (method: string) => {
     fetch("/api/expressions", {
-              method: "POST", headers: {
-                "Content-Type": "application/json",
-              }, body: JSON.stringify({ method, data: selectedIds[0] })
-            }).then(getExpr).then(addExpr);
-  }
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ method, data: selectedIds[0] })
+    }).then(getExpr).then(addExpr);
+  };
 
   return (
     <div className="toolbar">
@@ -41,6 +45,9 @@ export default function Toolbar({
       <button disabled={!one} onClick={() => onClick("together")}>Together</button>
       <button disabled={!one} onClick={() => onClick("apart")}>Apart</button>
       <button disabled={!one} onClick={onSolve}>Solve</button>
+
+      <button disabled={!one} onClick={() => onCalculus("differentiate")}>Differentiate</button>
+      <button disabled={!one} onClick={() => onCalculus("integrate")}>Integrate</button>
 
       <button disabled={!two} onClick={() => onResultant(selectedIds[0], selectedIds[1])}>
         Resultant
